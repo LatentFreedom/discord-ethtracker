@@ -16,3 +16,6 @@ Get a Bot to change it's activity status to the current price of Ethereum.
 DISCORD_TOKEN=
 ETHERSCAN_PRIV=
 ```
+
+## Discord / Commands
+1. **ethalert:** alert user when eth reaches specified amount
