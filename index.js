@@ -38,12 +38,16 @@ const createCommands = () => {
 }
 
 getEth = () => {
-    let req = `https://api.etherscan.io/api?module=stats&action=ethprice&apikey=${process.env.ETHERSCAN_PRIV}`;
-    axios.get(req).then(res => {
-        ethPrice = res.data;
-        client.user.setActivity(`ETH | $${ethPrice.result.ethusd}`);
-        checkAlerts();
-    })
+    try {
+        let req = `https://api.etherscan.io/api?module=stats&action=ethprice&apikey=${process.env.ETHERSCAN_PRIV}`;
+        axios.get(req).then(res => {
+            ethPrice = res.data;
+            client.user.setActivity(`ETH | $${ethPrice.result.ethusd}`);
+            checkAlerts();
+        })
+    } catch (err) {
+        console.log(err);
+    }
 }
 
 checkAlerts = () => {
