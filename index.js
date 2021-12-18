@@ -50,19 +50,19 @@ const getEth = async () => {
 }
 
 const checkAlerts = () => {
-    try {
-        alerts.forEach((amounts, author) => {
-            amounts.forEach((amount, index) => {
+    alerts.forEach((amounts, author) => {
+        amounts.forEach((amount, index) => {
+            try {
                 if (amount >= ethPrice.result.ethusd) {
                     author.send(`ETH is now $${ethPrice.result.ethusd}.`);
                     let newAlertList = [...alerts.get(author).slice(0, index), ...alerts.get(author).slice(index+1)];
                     alerts.set(author, newAlertList);
                 }
-            })
+            } catch (err) {
+                console.log(err);
+            }
         })
-    } catch (err) {
-        console.log(err);
-    }
+    })
 }
 
 setInterval(getEth, 10 * 2000);
@@ -80,7 +80,7 @@ client.on('interactionCreate', async (interaction) => {
             ephemeral: true
         })
         // Add alert to Mapping
-        if(!alerts.has(user)) {
+        if (!alerts.has(user)) {
             alerts.set(user, [price]);
         } else {
             let newAlertList = alerts.get(user);
