@@ -37,20 +37,19 @@ const createCommands = () => {
     });
 }
 
-getEth = () => {
+const getEth = async () => {
     try {
         let req = `https://api.etherscan.io/api?module=stats&action=ethprice&apikey=${process.env.ETHERSCAN_PRIV}`;
-        axios.get(req).then(res => {
-            ethPrice = res.data;
-            client.user.setActivity(`ETH | $${ethPrice.result.ethusd}`);
-            checkAlerts();
-        })
+        const res = await axios.get(req);
+        ethPrice = res.data;
+        client.user.setActivity(`ETH | $${ethPrice.result.ethusd}`);
+        checkAlerts();
     } catch (err) {
         console.log(err);
     }
 }
 
-checkAlerts = () => {
+const checkAlerts = () => {
     try {
         alerts.forEach((amounts, author) => {
             amounts.forEach((amount, index) => {
@@ -66,7 +65,7 @@ checkAlerts = () => {
     }
 }
 
-setInterval(getEth, 10 * 3000);
+setInterval(getEth, 10 * 2000);
 
 client.on('interactionCreate', async (interaction) => {
     if (!interaction.isCommand()) { return; }
