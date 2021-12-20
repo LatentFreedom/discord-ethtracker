@@ -75,7 +75,7 @@ const checkAlerts = () => {
     })
 }
 
-setInterval(getGas, 10 * 2000);
+setInterval(getEth, 10 * 2000);
 setInterval(checkAlerts, 10 * 3000);
 
 client.on('interactionCreate', (interaction) => {
