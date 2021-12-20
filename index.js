@@ -24,7 +24,7 @@ const createCommands = () => {
         // alert command
         commands?.create({
             name: "ethalert",
-            description: "alert user when eth reaches specified amount",
+            description: "alert user when eth reaches specified price",
             options: [
                 {
                     name: "price",
@@ -49,10 +49,10 @@ const getEth = async () => {
 }
 
 const checkAlerts = () => {
-    alerts.forEach((amounts, author) => {
-        amounts.forEach(({amount, channelId}, index) => {
+    alerts.forEach((prices, author) => {
+        prices.forEach(({price, channelId}, index) => {
             try {
-                if (amount >= gasPrices.result.FastGasPrice) {
+                if (price >= ethPrice.result.ethusd) {
                     const res = author.send(`ETH is now $${ethPrice.result.ethusd}.`).catch(error => {
                         if (error.code === Constants.APIErrors.CANNOT_MESSAGE_USER) {
                             // console.error(`Failed to send direct message to ${author.username}#${author.discriminator}`);
@@ -92,7 +92,7 @@ client.on('interactionCreate', (interaction) => {
         })
         // Add alert to alerts mapping
         const alert = {
-            amount: amount,
+            price: price,
             channelId: interaction.channelId
         };
         if (!alerts.has(user)) {
