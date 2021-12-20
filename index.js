@@ -43,7 +43,6 @@ const getEth = async () => {
         const res = await axios.get(req);
         ethPrice = res.data;
         client.user.setActivity(`ETH | $${ethPrice.result.ethusd}`);
-        checkAlerts();
     } catch (err) {
         console.log(err);
     }
@@ -51,10 +50,21 @@ const getEth = async () => {
 
 const checkAlerts = () => {
     alerts.forEach((amounts, author) => {
-        amounts.forEach((amount, index) => {
+        amounts.forEach(({amount, channelId}, index) => {
             try {
-                if (amount >= ethPrice.result.ethusd) {
-                    author.send(`ETH is now $${ethPrice.result.ethusd}.`);
+                if (amount >= gasPrices.result.FastGasPrice) {
+                    const res = author.send(`ETH is now $${ethPrice.result.ethusd}.`).catch(error => {
+                        if (error.code === Constants.APIErrors.CANNOT_MESSAGE_USER) {
+                            // console.error(`Failed to send direct message to ${author.username}#${author.discriminator}`);
+                            client.channels.cache.get(channelId)
+                                .send(`@${author.username}, ETH is now $${ethPrice.result.ethusd}.`)
+                                .catch(error => {
+                                    if (error.code === Constants.APIErrors.MISSING_ACCESS) {
+                                        console.error(`Failed to send message to ${author.username}#${author.discriminator}. Bot missing access to channel.`);
+                                    }
+                                });
+                        }
+                    });
                     let newAlertList = [...alerts.get(author).slice(0, index), ...alerts.get(author).slice(index+1)];
                     alerts.set(author, newAlertList);
                 }
@@ -65,9 +75,10 @@ const checkAlerts = () => {
     })
 }
 
-setInterval(getEth, 10 * 2000);
+setInterval(getGas, 10 * 2000);
+setInterval(checkAlerts, 10 * 3000);
 
-client.on('interactionCreate', async (interaction) => {
+client.on('interactionCreate', (interaction) => {
     if (!interaction.isCommand()) { return; }
     const { commandName, options } = interaction;
     if (commandName === 'ethalert') {
@@ -79,13 +90,17 @@ client.on('interactionCreate', async (interaction) => {
             content: `Thanks, **${name}**. I will send a private message when ETH is below **$${price}**.`,
             ephemeral: true
         })
-        // Add alert to Mapping
+        // Add alert to alerts mapping
+        const alert = {
+            amount: amount,
+            channelId: interaction.channelId
+        };
         if (!alerts.has(user)) {
-            alerts.set(user, [price]);
+            alerts.set(user, [alert]);
         } else {
             let newAlertList = alerts.get(user);
-            newAlertList.push(price);
-            alerts.set(user, newAlertList);
+            newAlertList.push(alert);
+            alerts.set(user,newAlertList);
         }
     }
 })
